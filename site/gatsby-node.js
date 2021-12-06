@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const { createRemoteFileNode } = require('gatsby-source-filesystem');
+const slugify = require('slugify');
 const authors = require('./src/data/authors.json');
 const books = require('./src/data/books.json');
 
@@ -55,7 +56,7 @@ exports.sourceNodes = ({ actions, createNodeId, createContentDigest }) => {
   };
 };
 
-exports.createPages = ({ actions }) => {
+exports.createPages = async ({ actions, graphql }) => {
   const { createPage } = actions;
 
   createPage({
@@ -67,6 +68,44 @@ exports.createPages = ({ actions }) => {
         description: 'My text description on the custom page',
       },
     },
+  });
+
+  const result = await graphql(`
+    query GetBooks {
+      allBook {
+        nodes {
+          id
+          series
+          name
+        }
+      }
+    }
+  `);
+
+  const books = result.data.allBook.nodes;
+
+  books.forEach((book) => {
+    const bookSlug = slugify(book.name, { lower: true });
+
+    if (book.series === null) {
+      createPage({
+        path: `/book/${bookSlug}`,
+        component: require.resolve('./src/templates/book.js'),
+        context: {
+          id: book.id,
+        },
+      });
+    } else {
+      const seriesSlug = slugify(book.name, { lower: true });
+
+      createPage({
+        path: `/book/${seriesSlug}/${bookSlug}`,
+        component: require.resolve('./src/templates/book.js'),
+        context: {
+          id: book.id,
+        },
+      });
+    }
   });
 };
 
