@@ -44,16 +44,6 @@ exports.sourceNodes = ({ actions, createNodeId, createContentDigest }) => {
       },
     });
   });
-  const node = {
-    id: createNodeId(`some-unique-string`),
-    parent: null,
-    cheildren: [],
-    internal: {
-      type: 'MyCustomType',
-      content: JSON.stringify(nodeContent),
-      contentDigest: createContentDigest(nodeContent),
-    },
-  };
 };
 
 exports.createPages = async ({ actions, graphql }) => {
